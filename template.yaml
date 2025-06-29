@@ -72,3 +72,60 @@ Resources:
       Handler: page_capture.lambda_handler
       CodeUri: src/lambda/
       Policies: AWSLambdaBasicExecutionRole
+
+  ScrapingStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: scraping-state-machine
+      Definition:
+        StartAt: SearchWordReceiver
+        States:
+          SearchWordReceiver:
+            Type: Task
+            Resource: !GetAtt SearchWordReceiverFunction.Arn
+            Next: GoogleSearchApi
+          GoogleSearchApi:
+            Type: Task
+            Resource: !GetAtt GoogleSearchApiFunction.Arn
+            Next: MapOverResults
+          MapOverResults:
+            Type: Map
+            ItemsPath: $.searchResults  # GoogleSearchApiの出力配列パスに合わせて調整
+            MaxConcurrency: 2
+            Iterator:
+              StartAt: PageCapture
+              States:
+                PageCapture:
+                  Type: Task
+                  Resource: !GetAtt PageCaptureFunction.Arn
+                  Next: GoogleDriveUploader
+                GoogleDriveUploader:
+                  Type: Task
+                  Resource: !GetAtt GoogleDriveUploaderFunction.Arn
+                  Next: SheetsUrlRecorder
+                SheetsUrlRecorder:
+                  Type: Task
+                  Resource: !GetAtt SheetsUrlRecorderFunction.Arn
+                  End: true
+            End: true
+      RoleArn: !GetAtt StepFunctionsExecutionRole.Arn
+
+  StepFunctionsExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: StepFunctionsInvokeLambda
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: "*"
