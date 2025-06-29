@@ -1,18 +1,18 @@
-# Sheets URL Recorder Lambda
+# Sheets URL Recorder Lambda（日本語訳）
 
-This Lambda function records URLs from Google Drive files to Google Sheets.
+このLambda関数はGoogle DriveファイルのURLをGoogle Sheetsに記録します。
 
-## Function Overview
+## 機能概要
 
-The `sheets_url_recorder` Lambda function:
-- Receives input containing URL and spreadsheet information
-- Authenticates with Google Sheets API using service account credentials
-- Records URLs with timestamps and additional metadata to specified Google Sheets
-- Handles error cases gracefully with appropriate HTTP status codes
+`sheets_url_recorder` Lambda関数は以下を行います：
+- URLとスプレッドシート情報を受け取る
+- サービスアカウント認証でGoogle Sheets APIに接続
+- タイムスタンプや追加メタデータとともに指定シートにURLを記録
+- 適切なHTTPステータスでエラーも丁寧に処理
 
-## Input Format
+## 入力フォーマット
 
-The Lambda function expects an event with the following fields:
+以下のフィールドを持つイベントを受け取ります：
 
 ```json
 {
@@ -28,17 +28,17 @@ The Lambda function expects an event with the following fields:
 }
 ```
 
-### Required Fields
-- `url`: The URL to be recorded (required)
-- `spreadsheet_id`: The Google Sheets spreadsheet ID (required)
+### 必須フィールド
+- `url`: 記録するURL（必須）
+- `spreadsheet_id`: Google SheetsのスプレッドシートID（必須）
 
-### Optional Fields
-- `sheet_range`: The range in A1 notation where data should be appended (default: "Sheet1!A:F")
-- `additional_data`: Object containing additional metadata to record
+### 任意フィールド
+- `sheet_range`: 書き込む範囲（デフォルト: "Sheet1!A:F"）
+- `additional_data`: 追加メタデータ
 
-## Output Format
+## 出力フォーマット
 
-### Success Response (HTTP 200)
+### 成功時レスポンス（HTTP 200）
 ```json
 {
   "statusCode": 200,
@@ -49,62 +49,40 @@ The Lambda function expects an event with the following fields:
 }
 ```
 
-### Error Response (HTTP 400 - Missing Required Field)
-```json
-{
-  "statusCode": 400,
-  "body": "{\"error\": \"URL not found in input\", \"success\": false}"
-}
-```
+### エラー時レスポンス例
+- 必須フィールド不足（HTTP 400）
+- サービス利用不可（HTTP 503）
+- 内部エラー（HTTP 500）
 
-### Error Response (HTTP 503 - Service Unavailable)
-```json
-{
-  "statusCode": 503,
-  "body": "{\"error\": \"Google Sheets service unavailable\", \"success\": false}"
-}
-```
+## シートに記録されるデータ
 
-### Error Response (HTTP 500 - Internal Error)
-```json
-{
-  "statusCode": 500,
-  "body": "{\"error\": \"Internal server error: error details\", \"success\": false}"
-}
-```
+1. タイムスタンプ（ISO 8601）
+2. URL
+3. ファイル名（追加データ）
+4. ファイルID（追加データ）
+5. ファイルサイズ（追加データ）
+6. 説明（追加データ）
 
-## Data Written to Sheets
+## 設定
 
-The function writes the following columns to the spreadsheet:
-1. **Timestamp** (ISO 8601 format with 'Z' suffix)
-2. **URL** (the provided URL)
-3. **Filename** (from additional_data, if provided)
-4. **File ID** (from additional_data, if provided)
-5. **File Size** (from additional_data, if provided)
-6. **Description** (from additional_data, if provided)
+### 環境変数
+- `GOOGLE_SHEETS_CREDENTIALS`: サービスアカウント認証情報のJSON文字列
 
-## Configuration
-
-### Environment Variables
-- `GOOGLE_SHEETS_CREDENTIALS`: JSON string containing Google service account credentials
-
-### Required Google Sheets API Permissions
-The service account must have the following scope:
+### 必要なGoogle Sheets API権限
 - `https://www.googleapis.com/auth/spreadsheets`
 
-## Usage Examples
+## 使用例
 
-### Basic Usage
+### 基本的な使い方
 ```python
 event = {
     "url": "https://drive.google.com/file/d/1234567890/view",
     "spreadsheet_id": "1abcdefghijklmnopqrstuvwxyz1234567890"
 }
 response = lambda_handler(event, context)
-# Returns: {"statusCode": 200, "success": true, ...}
 ```
 
-### With Additional Data
+### 追加データ付き
 ```python
 event = {
     "url": "https://drive.google.com/file/d/1234567890/view",
@@ -119,11 +97,10 @@ event = {
 response = lambda_handler(event, context)
 ```
 
-### Step Functions Integration
-The function can be integrated into a Step Functions workflow:
+### Step Functions連携例
 ```json
 {
-  "Comment": "URL recording workflow",
+  "Comment": "URL記録ワークフロー",
   "StartAt": "RecordUrlToSheets",
   "States": {
     "RecordUrlToSheets": {
@@ -135,35 +112,33 @@ The function can be integrated into a Step Functions workflow:
 }
 ```
 
-## Dependencies
-
-The function requires the following Python packages:
+## 依存パッケージ
 - `google-api-python-client`
 - `google-auth`
 - `google-auth-oauthlib`
 - `google-auth-httplib2`
 
-## Testing
+## テスト
 
-Run the unit tests:
+ユニットテスト実行：
 ```bash
 python -m unittest tests.test_sheets_url_recorder -v
 ```
 
-Run all tests:
+全テスト実行：
 ```bash
 python -m unittest discover tests -v
 ```
 
-## Files
+## 関連ファイル
 
-- `src/lambda/sheets_url_recorder.py` - Main Lambda function
-- `tests/test_sheets_url_recorder.py` - Unit tests
-- `requirements.txt` - Python dependencies
+- `src/lambda/sheets_url_recorder.py` - メインのLambda関数
+- `tests/test_sheets_url_recorder.py` - ユニットテスト
+- `requirements.txt` - 依存パッケージ
 
-## Security Considerations
+## セキュリティ考慮事項
 
-- Store Google service account credentials securely in AWS Secrets Manager or environment variables
-- Use least privilege principle for Google Sheets API permissions
-- Validate and sanitize input data before writing to sheets
-- Monitor API usage to prevent quota exhaustion
+- サービスアカウント認証情報はSecrets Managerや環境変数で安全に管理
+- API権限は最小限に
+- 入力データのバリデーション推奨
+- API利用量を監視し、クォータ超過に注意

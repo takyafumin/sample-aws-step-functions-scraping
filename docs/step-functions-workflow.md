@@ -1,21 +1,21 @@
-# Step Functions Workflow Definition
+# Step Functions ワークフロー定義（日本語訳）
 
-This document describes the AWS Step Functions workflow for the scraping automation system.
+このドキュメントは、スクレイピング自動化システムのAWS Step Functionsワークフローについて説明します。
 
-## Workflow Overview
+## ワークフロー概要
 
-The scraping workflow consists of 4 main Lambda functions orchestrated by AWS Step Functions:
+このスクレイピングワークフローは、AWS Step Functionsでオーケストレーションされる4つの主要なLambda関数で構成されます：
 
-1. **search_word_receiver** - Receives and validates search words
-2. **web_scraper** - Performs web scraping based on search words  
-3. **data_processor** - Processes and cleans scraped data
-4. **results_handler** - Handles final results and prepares output
+1. **search_word_receiver** - 検索ワードの受信とバリデーション
+2. **web_scraper** - 検索ワードに基づくウェブスクレイピング
+3. **data_processor** - スクレイピングデータの処理・クリーニング
+4. **results_handler** - 最終結果の整形と出力
 
-## Workflow Definition
+## ワークフロー定義
 
-The Step Functions state machine is defined in `step-functions/scraping-workflow.json`.
+Step Functionsのステートマシン定義は `step-functions/scraping-workflow.json` に記載されています。
 
-### State Diagram
+### ステート図
 
 ```
 Start
@@ -23,58 +23,58 @@ Start
 ReceiveSearchWord (search_word_receiver)
   ↓
 CheckSearchWordValid (Choice)
-  ↓ (if valid)
+  ↓ (有効な場合)
 PerformWebScraping (web_scraper)
   ↓
 CheckScrapingResults (Choice)
-  ↓ (if results found)
+  ↓ (結果あり)
 ProcessScrapedData (data_processor)
   ↓
 CheckProcessingResults (Choice)
-  ↓ (if successful)
+  ↓ (成功時)
 HandleFinalResults (results_handler)
   ↓
 WorkflowSuccess (Success)
 ```
 
-### Error Handling
+### エラー処理
 
-Each Lambda function state includes:
-- **Retry policies** with exponential backoff
-- **Catch blocks** for error handling
-- **Timeouts** to prevent hanging
-- **Choice states** for conditional logic
+各Lambda関数のステートには：
+- 指数バックオフ付きリトライポリシー
+- エラーハンドリング用Catchブロック
+- ハング防止のタイムアウト
+- 条件分岐のChoiceステート
 
-### Input/Output Coordination
+### 入出力連携
 
-Data flows between states as follows:
+各ステート間のデータフロー例：
 
-#### Input Format
+#### 入力フォーマット
 ```json
 {
-  "searchWord": "your search term here"
+  "searchWord": "検索ワード"
 }
 ```
 
-#### Between ReceiveSearchWord → PerformWebScraping
+#### ReceiveSearchWord → PerformWebScraping
 ```json
 {
   "statusCode": 200,
-  "searchWord": "your search term here",
+  "searchWord": "検索ワード",
   "body": "..."
 }
 ```
 
-#### Between PerformWebScraping → ProcessScrapedData
+#### PerformWebScraping → ProcessScrapedData
 ```json
 {
   "statusCode": 200,
-  "searchWord": "your search term here",
+  "searchWord": "検索ワード",
   "scrapedData": [
     {
-      "title": "Article Title",
+      "title": "記事タイトル",
       "url": "https://example.com",
-      "content": "Article content...",
+      "content": "記事本文...",
       "timestamp": "2024-01-01T10:00:00Z"
     }
   ],
@@ -82,16 +82,16 @@ Data flows between states as follows:
 }
 ```
 
-#### Between ProcessScrapedData → HandleFinalResults
+#### ProcessScrapedData → HandleFinalResults
 ```json
 {
   "statusCode": 200,
-  "searchWord": "your search term here",
+  "searchWord": "検索ワード",
   "processedData": [
     {
-      "title": "Article Title",
-      "url": "https://example.com", 
-      "content": "Cleaned article content...",
+      "title": "記事タイトル",
+      "url": "https://example.com",
+      "content": "クリーン済み記事本文...",
       "relevanceScore": 85.5,
       "wordCount": 150,
       "processedAt": "2024-01-01T10:01:00Z"
@@ -102,12 +102,12 @@ Data flows between states as follows:
 }
 ```
 
-#### Final Output
+#### 最終出力
 ```json
 {
   "statusCode": 200,
   "finalResults": {
-    "searchWord": "your search term here",
+    "searchWord": "検索ワード",
     "processedAt": "2024-01-01T10:02:00Z",
     "summary": {
       "totalItemsFound": 3,
@@ -117,9 +117,9 @@ Data flows between states as follows:
     },
     "results": [
       {
-        "title": "Article Title",
+        "title": "記事タイトル",
         "url": "https://example.com",
-        "content": "Cleaned article content...",
+        "content": "クリーン済み記事本文...",
         "relevanceScore": 85.5,
         "wordCount": 150,
         "processedAt": "2024-01-01T10:01:00Z"
@@ -134,29 +134,27 @@ Data flows between states as follows:
 }
 ```
 
-## Error Scenarios
+## エラーシナリオ
 
-### No Search Word
-If no search word is provided, the workflow fails at the first Choice state.
+### 検索ワードなし
+最初のChoiceステートでワークフローが失敗します。
 
-### No Scraping Results
-If no results are found during scraping, the workflow goes to the `HandleNoResults` state and returns an empty result set.
+### スクレイピング結果なし
+スクレイピングで結果が得られなかった場合、`HandleNoResults`ステートに遷移し空の結果セットを返します。
 
-### Lambda Function Failures
-Each Lambda function has retry logic. If all retries fail, the workflow goes to the error handling state.
+### Lambda関数の失敗
+各Lambda関数にはリトライロジックがあります。すべて失敗した場合はエラーハンドリングステートに遷移します。
 
-## Deployment
+## デプロイ手順
 
-To deploy this workflow:
+1. Lambda関数をソースコードから作成
+2. `scraping-workflow.json`のARNを更新
+3. JSON定義でStep Functionsステートマシンを作成
+4. 適切なIAMロール・権限を設定
 
-1. Create the Lambda functions from the source code
-2. Update the ARNs in `scraping-workflow.json`
-3. Create the Step Functions state machine using the JSON definition
-4. Configure appropriate IAM roles and permissions
+## テスト
 
-## Testing
-
-Run the integration tests to verify the complete workflow:
+統合テストでワークフロー全体を検証：
 
 ```bash
 python -m unittest tests.test_workflow_integration -v

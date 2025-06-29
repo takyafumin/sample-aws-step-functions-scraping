@@ -1,103 +1,78 @@
-# Google Search API Lambda
+# Google Search API Lambda（日本語訳）
 
-This Lambda function performs Google Custom Search API requests to retrieve the top 5 search result URLs for a given search word.
+このLambda関数はGoogle Custom Search APIを使い、指定した検索ワードの上位5件の検索結果URLを取得します。
 
-## Function Overview
+## 機能概要
 
-The `google_search_api` Lambda function:
-- Receives input from AWS Step Functions containing a search word
-- Calls Google Custom Search API to retrieve search results
-- Extracts the top 5 URLs from the search results
-- Returns the URLs in a standardized JSON format
-- Handles error cases gracefully including API failures and missing configuration
+`google_search_api` Lambda関数は以下を行います：
+- AWS Step Functionsから検索ワードを受け取る
+- Google Custom Search APIを呼び出して検索結果を取得
+- 上位5件のURLを抽出
+- 標準化されたJSON形式でURLを返す
+- API障害や設定不足などのエラーも丁寧に処理
 
-## Configuration Requirements
+## 設定要件
 
-The Lambda function requires the following environment variables:
-- `GOOGLE_API_KEY`: Your Google API key with Custom Search API access
-- `GOOGLE_SEARCH_ENGINE_ID`: Your Google Custom Search Engine ID
+このLambda関数には以下の環境変数が必要です：
+- `GOOGLE_API_KEY`: Custom Search API用のGoogle APIキー
+- `GOOGLE_SEARCH_ENGINE_ID`: Google Custom Search Engine ID
 
-### Setting up Google Custom Search API
+### Google Custom Search APIのセットアップ手順
+1. [Google Cloud Console](https://console.cloud.google.com/)でCustom Search APIを有効化
+2. APIキーを作成
+3. [Google CSE](https://cse.google.com/)でカスタム検索エンジンを作成
+4. Lambdaの環境変数にAPIキーと検索エンジンIDを設定
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
-2. Enable the Custom Search API
-3. Create an API key with Custom Search API permissions
-4. Set up a Custom Search Engine at [Google CSE](https://cse.google.com/)
-5. Configure the Lambda environment variables with your API key and search engine ID
+## 入力フォーマット
 
-## Input Format
-
-The Lambda function expects an event with a `searchWord` field:
+`searchWord`フィールドを持つイベントを受け取ります：
 
 ```json
 {
-  "searchWord": "your search term here"
+  "searchWord": "検索ワード"
 }
 ```
 
-## Output Format
+## 出力フォーマット
 
-### Success Response (HTTP 200)
+### 成功時レスポンス（HTTP 200）
 ```json
 {
   "statusCode": 200,
-  "searchWord": "your search term here",
+  "searchWord": "検索ワード",
   "urls": [
     "https://example1.com",
     "https://example2.com",
-    "https://example3.com",
-    "https://example4.com",
-    "https://example5.com"
+    ...
   ],
-  "body": "{\"searchWord\": \"your search term here\", \"urls\": [...], \"message\": \"Found 5 search results\"}"
+  "body": "{\"searchWord\": \"検索ワード\", \"urls\": [...], \"message\": \"Found 5 search results\"}"
 }
 ```
 
-### Error Response (HTTP 400 - Missing Search Word)
-```json
-{
-  "statusCode": 400,
-  "body": "{\"error\": \"Search word not found in input\", \"searchWord\": null, \"urls\": []}"
-}
-```
+### エラー時レスポンス例
+- 検索ワードがない場合（HTTP 400）
+- 設定不足（HTTP 500）
+- API障害（HTTP 500）
 
-### Error Response (HTTP 500 - Missing Configuration)
-```json
-{
-  "statusCode": 500,
-  "body": "{\"error\": \"Google API configuration not found\", \"searchWord\": \"search term\", \"urls\": []}"
-}
-```
+## 使用例
 
-### Error Response (HTTP 500 - API Failure)
-```json
-{
-  "statusCode": 500,
-  "body": "{\"error\": \"Failed to perform Google search\", \"searchWord\": \"search term\", \"urls\": []}"
-}
-```
-
-## Usage Examples
-
-### Basic Usage
+### 基本的な使い方
 ```python
-event = {"searchWord": "python programming"}
+event = {"searchWord": "python プログラミング"}
 response = lambda_handler(event, context)
-# Returns: {"statusCode": 200, "searchWord": "python programming", "urls": [...]}
+# 戻り値例: {"statusCode": 200, "searchWord": "python プログラミング", "urls": [...]}
 ```
 
-### Japanese Search Words
+### 日本語検索ワード
 ```python
 event = {"searchWord": "プログラミング 学習"}
 response = lambda_handler(event, context)
-# Returns: {"statusCode": 200, "searchWord": "プログラミング 学習", "urls": [...]}
 ```
 
-### Step Functions Integration
-The function can be used as part of a Step Functions workflow after the search word receiver:
+### Step Functions連携例
 ```json
 {
-  "Comment": "Scraping workflow with Google search",
+  "Comment": "Google検索付きスクレイピングワークフロー",
   "StartAt": "ReceiveSearchWord",
   "States": {
     "ReceiveSearchWord": {
@@ -114,44 +89,41 @@ The function can be used as part of a Step Functions workflow after the search w
 }
 ```
 
-## Features
+## 特徴
 
-- **Top 5 Results**: Returns up to 5 search result URLs
-- **Error Handling**: Comprehensive error handling for API failures, network issues, and configuration problems
-- **Unicode Support**: Supports search terms in multiple languages including Japanese
-- **Timeout Protection**: Includes 30-second timeout for API requests
-- **Logging**: Detailed logging for debugging and monitoring
-- **Step Functions Ready**: Designed to integrate seamlessly with AWS Step Functions
+- **上位5件返却**
+- **エラー処理**: API障害・ネットワーク障害・設定不足もカバー
+- **多言語対応**: 日本語などUnicode検索ワードもOK
+- **タイムアウト保護**: APIリクエストは30秒タイムアウト
+- **ロギング**: 詳細なログ出力
+- **Step Functions連携設計**
 
-## Testing
+## テスト
 
-Run the unit tests:
+ユニットテスト実行：
 ```bash
 python -m unittest tests.test_google_search_api -v
 ```
 
-Run all tests:
+全テスト実行：
 ```bash
 python -m unittest discover tests -v
 ```
 
-## Files
+## 関連ファイル
 
-- `src/lambda/google_search_api.py` - Main Lambda function
-- `tests/test_google_search_api.py` - Unit tests
-- `docs/google_search_api.md` - This documentation
+- `src/lambda/google_search_api.py` - メインのLambda関数
+- `tests/test_google_search_api.py` - ユニットテスト
+- `docs/google_search_api.md` - 本ドキュメント
 
-## API Rate Limits
+## API利用制限
 
-Please be aware of Google Custom Search API rate limits:
-- Free quota: 100 search queries per day
-- Paid quota: Up to 10,000 queries per day (requires billing setup)
+- 無料枠: 1日100クエリ
+- 有料枠: 1日最大10,000クエリ（課金設定必要）
 
-Configure appropriate retry logic and error handling based on your usage requirements.
+## セキュリティ考慮事項
 
-## Security Considerations
-
-- Store API keys securely using AWS Systems Manager Parameter Store or AWS Secrets Manager
-- Use IAM roles with minimal required permissions
-- Monitor API usage to prevent unexpected charges
-- Validate and sanitize search input if accepting user-generated content
+- APIキーはAWS Secrets Managerや環境変数で安全に管理
+- IAM権限は最小限に
+- API利用量を監視し、予期せぬ課金に注意
+- ユーザー入力を受け付ける場合はバリデーション推奨

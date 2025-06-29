@@ -12,81 +12,81 @@ AWS Step Functions を使用してスクレイピング処理を実行するプ�
 #### search_word_receiver
 Step Functions の入力から検索ワードを受け取り、次の処理に渡すための Lambda 関数です。
 
-- **機能**: Step Functions イベントから検索ワードを抽出し、JSON 形式で返却
+- **機能**: Step Functionsイベントから検索ワードを抽出し、JSON形式で返却
 - **入力**: `{"searchWord": "検索ワード"}`
-- **出力**: 検索ワードを含む JSON レスポンス
+- **出力**: 検索ワードを含むJSONレスポンス
 
 詳細は [docs/search_word_receiver.md](docs/search_word_receiver.md) を参照してください。
 
 #### google_search_api
 Google Custom Search API を使用して検索結果の上位5件のURLを取得する Lambda 関数です。
 
-- **機能**: Google Custom Search API を呼び出し、指定された検索ワードで上位5件のURLを取得
+- **機能**: Google Custom Search APIを呼び出し、指定された検索ワードで上位5件のURLを取得
 - **入力**: `{"searchWord": "検索ワード"}`
-- **出力**: 上位5件のURLを含む JSON レスポンス
-- **設定**: Google API Key と Search Engine ID が環境変数として必要
+- **出力**: 上位5件のURLを含むJSONレスポンス
+- **設定**: Google API KeyとSearch Engine IDが環境変数として必要
 
 詳細は [docs/google_search_api.md](docs/google_search_api.md) を参照してください。
 
 #### google_drive_uploader
-キャプチャ画像を Google Drive にアップロードし、共有URLを取得する Lambda 関数です。
+キャプチャ画像をGoogle Driveにアップロードし、共有URLを取得するLambda関数です。
 
-- **機能**: Base64エンコードされた画像データを Google Drive にアップロードし、共有URLを生成
+- **機能**: Base64エンコードされた画像データをGoogle Driveにアップロードし、共有URLを生成
 - **入力**: `{"imageData": "base64画像データ", "filename": "ファイル名", "folderId": "フォルダID"}`
-- **出力**: 共有URLとファイル情報を含む JSON レスポンス
+- **出力**: 共有URLとファイル情報を含むJSONレスポンス
 
 詳細は [docs/google_drive_uploader.md](docs/google_drive_uploader.md) を参照してください。
 
 #### web_scraper
-検索ワードに基づいてウェブスクレイピングを実行する Lambda 関数です。
+検索ワードに基づいてウェブスクレイピングを実行するLambda関数です。
 
 - **機能**: 検索ワードを使用してウェブサイトからデータをスクレイピング
-- **入力**: 検索ワードを含む JSON
+- **入力**: 検索ワードを含むJSON
 - **出力**: スクレイピングされたデータの配列
 
 #### data_processor
-スクレイピングされたデータを処理・クリーニングする Lambda 関数です。
+スクレイピングされたデータを処理・クリーニングするLambda関数です。
 
 - **機能**: データのクリーニング、関連性スコア計算、並び替え
 - **入力**: スクレイピングされた生データ
 - **出力**: 処理済みで関連性スコア付きのデータ
 
 #### results_handler
-最終結果をまとめて出力形式を整える Lambda 関数です。
+最終結果をまとめて出力形式を整えるLambda関数です。
 
 - **機能**: 結果の集約、サマリー作成、最終出力フォーマット
 - **入力**: 処理済みデータ
 - **出力**: 最終結果とサマリー
 
 #### sheets_url_recorder
-Google Drive で取得したファイルの URL を Google Sheets に記録する Lambda 関数です。
+Google Driveで取得したファイルのURLをGoogle Sheetsに記録するLambda関数です。
 
-- **機能**: URL とメタデータを指定した Google Sheets に記録
+- **機能**: URLとメタデータを指定したGoogle Sheetsに記録
 - **入力**: `{"url": "ファイルURL", "spreadsheet_id": "シートID"}`
-- **出力**: 記録成功・失敗を含む JSON レスポンス
+- **出力**: 記録成功・失敗を含むJSONレスポンス
 
 詳細は [docs/sheets_url_recorder.md](docs/sheets_url_recorder.md) を参照してください。
-
-### Step Functions Workflow
-
-すべての Lambda 関数は AWS Step Functions によってオーケストレーションされ、以下のフローで実行されます：
-
-1. **検索ワード受信** → 2. **ウェブスクレイピング** → 3. **データ処理** → 4. **結果ハンドリング**
-
-- エラー処理とリトライ機能を含む
-- 各ステップ間での適切な入出力連携
-- 条件分岐による柔軟な処理フロー
-
-詳細は [docs/step-functions-workflow.md](docs/step-functions-workflow.md) を参照してください。
 
 #### page_capture
 指定されたURLのページをキャプチャし、画像ファイルとして保存するLambda関数です。
 
 - **機能**: URLのページスクリーンショットを取得し、画像データとして返却
 - **入力**: `{"url": "https://example.com"}`
-- **出力**: 画像ファイルパスとbase64エンコードされた画像データを含む JSON レスポンス
+- **出力**: 画像ファイルパスとbase64エンコードされた画像データを含むJSONレスポンス
 
 詳細は [docs/page_capture.md](docs/page_capture.md) を参照してください。
+
+### Step Functions Workflow
+
+すべてのLambda関数はAWS Step Functionsによってオーケストレーションされ、以下のフローで実行されます：
+
+1. 検索ワード受信 → 2. ウェブスクレイピング → 3. データ処理 → 4. 結果ハンドリング
+
+- エラー処理とリトライ機能を含む
+- 各ステップ間での適切な入出力連携
+- 条件分岐による柔軟な処理フロー
+
+詳細は [docs/step-functions-workflow.md](docs/step-functions-workflow.md) を参照してください。
 
 ## ディレクトリ構成
 
@@ -161,24 +161,19 @@ pip install -r requirements.txt
 
 #### 3. テスト実行
 ```bash
-# 全テスト実行
 python -m unittest discover tests -v
-
 # 個別Lambda関数テスト
 python -m unittest tests.test_search_word_receiver -v
 python -m unittest tests.test_google_drive_uploader -v
 python -m unittest tests.test_web_scraper -v
 python -m unittest tests.test_data_processor -v
 python -m unittest tests.test_results_handler -v
-
-# 全テスト実行
 python -m unittest discover tests -v
-
 # ワークフロー統合テスト
 python -m unittest tests.test_workflow_integration -v
 ```
 
-### 方法2: Dockerを使用した実行
+### 方法2: Dockerを使った実行
 
 #### 1. Dockerイメージのビルド
 ```bash
@@ -190,7 +185,7 @@ docker build -t step-functions-scraping .
 docker run step-functions-scraping
 ```
 
-### 方法3: Docker Composeを使用した実行
+### 方法3: Docker Composeを使った実行
 
 #### 1. テスト実行
 ```bash
