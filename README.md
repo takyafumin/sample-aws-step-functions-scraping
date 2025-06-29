@@ -48,6 +48,15 @@ Step Functions の入力から検索ワードを受け取り、次の処理に�
 - **入力**: 処理済みデータ
 - **出力**: 最終結果とサマリー
 
+#### sheets_url_recorder
+Google Drive で取得したファイルの URL を Google Sheets に記録する Lambda 関数です。
+
+- **機能**: URL とメタデータを指定した Google Sheets に記録
+- **入力**: `{"url": "ファイルURL", "spreadsheet_id": "シートID"}`
+- **出力**: 記録成功・失敗を含む JSON レスポンス
+
+詳細は [docs/sheets_url_recorder.md](docs/sheets_url_recorder.md) を参照してください。
+
 ### Step Functions Workflow
 
 すべての Lambda 関数は AWS Step Functions によってオーケストレーションされ、以下のフローで実行されます：
@@ -76,6 +85,13 @@ Step Functions の入力から検索ワードを受け取り、次の処理に�
 │   └── lambda/
 │       ├── __init__.py
 │       ├── search_word_receiver.py      # 検索ワード受信Lambda
+│       └── sheets_url_recorder.py       # Google SheetsへのURL記録Lambda
+├── tests/
+│   ├── test_search_word_receiver.py     # search_word_receiver の単体テスト
+│   └── test_sheets_url_recorder.py      # sheets_url_recorder の単体テスト
+├── docs/
+│   ├── search_word_receiver.md          # search_word_receiver の詳細ドキュメント
+│   └── sheets_url_recorder.md           # sheets_url_recorder の詳細ドキュメント
 │       └── google_drive_uploader.py     # Google Drive画像アップロードLambda
 ├── tests/
 │   ├── test_search_word_receiver.py     # 検索ワード受信の単体テスト
