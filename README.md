@@ -237,6 +237,16 @@ RUNTIME=python3.11
 
 - Lambdaやリソース定義は `template.yaml` で管理します
 
+## GitHub Actions でのデプロイ方法
+
+1. GitHub のリポジトリ画面で「Actions」タブを開く
+2. 「Deploy SAM Application」ワークフローを選択
+3. 「Run workflow」ボタンを押して手動実行
+4. デプロイが完了するとAWSに反映されます
+
+※ AWS認証情報（`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`）はGitHub Secretsに設定してください。
+※ スタック名は `.github/workflows/deploy-sam.yml` 内の `--stack-name` で指定されています。
+
 ## GitHub ActionsでSAMデプロイを実行するための設定
 
 GitHub ActionsからAWSへデプロイするには、AWS認証情報をリポジトリのSecretsに設定する必要があります。
