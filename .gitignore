@@ -112,3 +112,13 @@ dmypy.json
 tmp/
 temp/
 manual_test.py
+test_environment.py
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Virtual environments
+.venv/
+venv/
+.env

@@ -29,7 +29,56 @@ Step Functions の入力から検索ワードを受け取り、次の処理に�
 │   └── test_search_word_receiver.py   # 単体テスト
 ├── docs/
 │   └── search_word_receiver.md        # Lambda関数の詳細ドキュメント
+├── requirements.txt                   # Python依存関係
+├── runtime.txt                        # Pythonバージョン指定
+├── Dockerfile                         # Docker環境構築
+├── docker-compose.yml                # Docker Compose設定
 └── manual_test.py                     # 手動テストスクリプト
+```
+
+## 環境セットアップ
+
+このプロジェクトは環境に依存しないPython実行環境を提供します。
+
+### 方法1: ローカル環境での実行
+
+#### 1. Pythonバージョンの確認
+```bash
+python --version  # Python 3.12推奨
+```
+
+#### 2. 依存関係のインストール
+```bash
+pip install -r requirements.txt
+```
+
+#### 3. テスト実行
+```bash
+python -m unittest tests.test_search_word_receiver -v
+```
+
+### 方法2: Dockerを使用した実行
+
+#### 1. Dockerイメージのビルド
+```bash
+docker build -t step-functions-scraping .
+```
+
+#### 2. コンテナでテスト実行
+```bash
+docker run step-functions-scraping
+```
+
+### 方法3: Docker Composeを使用した実行
+
+#### 1. テスト実行
+```bash
+docker compose run app
+```
+
+#### 2. Lambda関数のテスト実行
+```bash
+docker compose run lambda-test
 ```
 
 ## テスト実行
