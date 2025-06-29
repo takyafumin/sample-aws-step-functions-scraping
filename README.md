@@ -28,6 +28,57 @@ Google Custom Search API を使用して検索結果の上位5件のURLを取得
 
 詳細は [docs/google_search_api.md](docs/google_search_api.md) を参照してください。
 
+#### google_drive_uploader
+キャプチャ画像を Google Drive にアップロードし、共有URLを取得する Lambda 関数です。
+
+- **機能**: Base64エンコードされた画像データを Google Drive にアップロードし、共有URLを生成
+- **入力**: `{"imageData": "base64画像データ", "filename": "ファイル名", "folderId": "フォルダID"}`
+- **出力**: 共有URLとファイル情報を含む JSON レスポンス
+
+詳細は [docs/google_drive_uploader.md](docs/google_drive_uploader.md) を参照してください。
+
+#### web_scraper
+検索ワードに基づいてウェブスクレイピングを実行する Lambda 関数です。
+
+- **機能**: 検索ワードを使用してウェブサイトからデータをスクレイピング
+- **入力**: 検索ワードを含む JSON
+- **出力**: スクレイピングされたデータの配列
+
+#### data_processor
+スクレイピングされたデータを処理・クリーニングする Lambda 関数です。
+
+- **機能**: データのクリーニング、関連性スコア計算、並び替え
+- **入力**: スクレイピングされた生データ
+- **出力**: 処理済みで関連性スコア付きのデータ
+
+#### results_handler
+最終結果をまとめて出力形式を整える Lambda 関数です。
+
+- **機能**: 結果の集約、サマリー作成、最終出力フォーマット
+- **入力**: 処理済みデータ
+- **出力**: 最終結果とサマリー
+
+### Step Functions Workflow
+
+すべての Lambda 関数は AWS Step Functions によってオーケストレーションされ、以下のフローで実行されます：
+
+1. **検索ワード受信** → 2. **ウェブスクレイピング** → 3. **データ処理** → 4. **結果ハンドリング**
+
+- エラー処理とリトライ機能を含む
+- 各ステップ間での適切な入出力連携
+- 条件分岐による柔軟な処理フロー
+
+詳細は [docs/step-functions-workflow.md](docs/step-functions-workflow.md) を参照してください。
+
+#### page_capture
+指定されたURLのページをキャプチャし、画像ファイルとして保存するLambda関数です。
+
+- **機能**: URLのページスクリーンショットを取得し、画像データとして返却
+- **入力**: `{"url": "https://example.com"}`
+- **出力**: 画像ファイルパスとbase64エンコードされた画像データを含む JSON レスポンス
+
+詳細は [docs/page_capture.md](docs/page_capture.md) を参照してください。
+
 ## ディレクトリ構成
 
 ```
@@ -42,21 +93,95 @@ Google Custom Search API を使用して検索結果の上位5件のURLを取得
 ├── docs/
 │   ├── search_word_receiver.md        # search_word_receiver詳細ドキュメント
 │   └── google_search_api.md           # google_search_api詳細ドキュメント
-└── manual_test.py                     # 手動テストスクリプト
+│       ├── search_word_receiver.py      # 検索ワード受信Lambda
+│       └── google_drive_uploader.py     # Google Drive画像アップロードLambda
+├── tests/
+│   ├── test_search_word_receiver.py     # 検索ワード受信の単体テスト
+│   └── test_google_drive_uploader.py    # Google Driveアップロードの単体テスト
+├── docs/
+│   ├── search_word_receiver.md          # 検索ワード受信Lambda詳細ドキュメント
+│   └── google_drive_uploader.md         # Google DriveアップロードLambda詳細ドキュメント
+│       ├── search_word_receiver.py    # 検索ワード受信Lambda
+│       ├── web_scraper.py             # ウェブスクレイピングLambda
+│       ├── data_processor.py          # データ処理Lambda
+│       └── results_handler.py         # 結果ハンドリングLambda
+├── step-functions/
+│   └── scraping-workflow.json         # Step Functions ワークフロー定義
+├── tests/
+│   ├── test_search_word_receiver.py   # 検索ワード受信Lambda テスト
+│   ├── test_web_scraper.py           # ウェブスクレイピングLambda テスト
+│   ├── test_data_processor.py        # データ処理Lambda テスト
+│   ├── test_results_handler.py       # 結果ハンドリングLambda テスト
+│   └── test_workflow_integration.py  # ワークフロー統合テスト
+├── tests/
+│   ├── test_search_word_receiver.py   # 検索ワード受信Lambda 単体テスト
+│   └── test_page_capture.py           # ページキャプチャLambda 単体テスト
+├── docs/
+│   ├── search_word_receiver.md        # Lambda関数の詳細ドキュメント
+│   └── step-functions-workflow.md     # Step Functions ワークフローの詳細
+│       └── page_capture.py            # ページキャプチャLambda
+├── manual_test.py                     # 手動テストスクリプト
+├── requirements.txt                   # Python依存関係
+├── runtime.txt                        # Pythonバージョン指定
+├── Dockerfile                         # Docker環境構築
+└── docker-compose.yml                # Docker Compose設定
 ```
 
-## テスト実行
+## 環境セットアップ
 
+このプロジェクトは環境に依存しないPython実行環境を提供します。
+
+### 方法1: ローカル環境での実行
+
+#### 1. Pythonバージョンの確認
 ```bash
-# 全ての単体テスト実行
+python --version  # Python 3.12推奨
+```
+
+#### 2. 依存関係のインストール
+```bash
+pip install -r requirements.txt
+```
+
+#### 3. テスト実行
+```bash
+# 全テスト実行
 python -m unittest discover tests -v
 
-# search_word_receiver単体テスト実行
+# 個別Lambda関数テスト
 python -m unittest tests.test_search_word_receiver -v
+python -m unittest tests.test_google_drive_uploader -v
+python -m unittest tests.test_web_scraper -v
+python -m unittest tests.test_data_processor -v
+python -m unittest tests.test_results_handler -v
 
-# google_search_api単体テスト実行
-python -m unittest tests.test_google_search_api -v
+# 全テスト実行
+python -m unittest discover tests -v
 
-# 手動テスト実行
-python manual_test.py
+# ワークフロー統合テスト
+python -m unittest tests.test_workflow_integration -v
+```
+
+### 方法2: Dockerを使用した実行
+
+#### 1. Dockerイメージのビルド
+```bash
+docker build -t step-functions-scraping .
+```
+
+#### 2. コンテナでテスト実行
+```bash
+docker run step-functions-scraping
+```
+
+### 方法3: Docker Composeを使用した実行
+
+#### 1. テスト実行
+```bash
+docker compose run app
+```
+
+#### 2. Lambda関数のテスト実行
+```bash
+docker compose run lambda-test
 ```
