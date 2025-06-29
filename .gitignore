@@ -113,3 +113,15 @@ tmp/
 temp/
 manual_test.py
 google_drive_example.py
+test_environment.py
+manual_test.py
+manual_test_page_capture.py
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Virtual environments (avoiding duplicates)
+.venv/
+venv/
+.env
