@@ -196,3 +196,63 @@ docker compose run app
 ```bash
 docker compose run lambda-test
 ```
+
+## .envファイルの作成
+
+Lambdaデプロイや一部のAPI連携には、AWSリソースや認証情報などの設定が必要です。
+
+1. プロジェクトルートに `.env` ファイルを作成し、必要な値を記載してください。
+2. サンプルは `.env.example` を参照してください。
+
+例:
+```
+ROLE_ARN=arn:aws:iam::123456789012:role/your-lambda-role
+HANDLER=main.lambda_handler
+RUNTIME=python3.11
+```
+
+- `.env` はGit管理対象外です。
+- Lambdaデプロイ時、引数で省略した値は `.env` の内容が自動で使われます。
+
+## Lambda関数のデプロイ（SAM方式）
+
+このプロジェクトのLambdaデプロイはAWS SAM（Serverless Application Model）で一元管理します。
+
+### デプロイ手順
+
+1. AWS SAM CLIをインストール
+   - 公式: https://docs.aws.amazon.com/ja_jp/serverless-application-model/latest/developerguide/install-sam-cli.html
+2. ビルド
+   ```bash
+   sam build
+   ```
+3. デプロイ
+   ```bash
+   sam deploy --guided
+   ```
+   - 2回目以降は `sam deploy` だけでOK
+4. GitHub Actionsからもデプロイ可能
+   - Actionsタブ > Deploy SAM Application ワークフローを実行
+   - AWS認証情報はSecretsに設定
+
+- Lambdaやリソース定義は `template.yaml` で管理します
+
+## GitHub ActionsでSAMデプロイを実行するための設定
+
+GitHub ActionsからAWSへデプロイするには、AWS認証情報をリポジトリのSecretsに設定する必要があります。
+
+### 必要なSecrets
+- `AWS_ACCESS_KEY_ID` : デプロイ権限を持つIAMユーザーのアクセスキーID
+- `AWS_SECRET_ACCESS_KEY` : 上記ユーザーのシークレットアクセスキー
+
+### 設定手順
+1. AWSマネジメントコンソールでデプロイ用IAMユーザーを作成し、アクセスキーを発行
+2. GitHubリポジトリの「Settings」→「Secrets and variables」→「Actions」へ移動
+3. 「New repository secret」ボタンから、
+   - Name: `AWS_ACCESS_KEY_ID`、Value: 発行したアクセスキーID
+   - Name: `AWS_SECRET_ACCESS_KEY`、Value: 発行したシークレットアクセスキー
+   をそれぞれ登録
+
+### 注意事項
+- IAMユーザーには `sam deploy` で必要な権限（例: CloudFormation, Lambda, IAM, S3 など）を付与してください
+- Secretsは漏洩しないよう厳重に管理してください
