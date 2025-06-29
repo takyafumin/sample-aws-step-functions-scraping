@@ -18,17 +18,29 @@ Step Functions の入力から検索ワードを受け取り、次の処理に�
 
 詳細は [docs/search_word_receiver.md](docs/search_word_receiver.md) を参照してください。
 
+#### page_capture
+指定されたURLのページをキャプチャし、画像ファイルとして保存するLambda関数です。
+
+- **機能**: URLのページスクリーンショットを取得し、画像データとして返却
+- **入力**: `{"url": "https://example.com"}`
+- **出力**: 画像ファイルパスとbase64エンコードされた画像データを含む JSON レスポンス
+
+詳細は [docs/page_capture.md](docs/page_capture.md) を参照してください。
+
 ## ディレクトリ構成
 
 ```
 ├── src/
 │   └── lambda/
 │       ├── __init__.py
-│       └── search_word_receiver.py    # 検索ワード受信Lambda
+│       ├── search_word_receiver.py    # 検索ワード受信Lambda
+│       └── page_capture.py            # ページキャプチャLambda
 ├── tests/
-│   └── test_search_word_receiver.py   # 単体テスト
+│   ├── test_search_word_receiver.py   # 検索ワード受信Lambda 単体テスト
+│   └── test_page_capture.py           # ページキャプチャLambda 単体テスト
 ├── docs/
-│   └── search_word_receiver.md        # Lambda関数の詳細ドキュメント
+│   ├── search_word_receiver.md        # 検索ワード受信Lambda 詳細ドキュメント
+│   └── page_capture.md                # ページキャプチャLambda 詳細ドキュメント
 ├── requirements.txt                   # Python依存関係
 ├── runtime.txt                        # Pythonバージョン指定
 ├── Dockerfile                         # Docker環境構築
@@ -83,6 +95,10 @@ docker compose run lambda-test
 ## テスト実行
 
 ```bash
-# 単体テスト実行
+# 全ての単体テスト実行
+python -m unittest discover tests -v
+
+# 個別のテスト実行
 python -m unittest tests.test_search_word_receiver -v
+python -m unittest tests.test_page_capture -v
 ```
