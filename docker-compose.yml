@@ -1,0 +1,21 @@
+# Docker Compose for local development and testing
+
+services:
+  app:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app/src/lambda
+    command: python -m unittest tests.test_search_word_receiver -v
+
+  # Service for running the Lambda function locally for testing
+  lambda-test:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app/src/lambda
+    command: >
+      sh -c "cd /app && 
+      python -c 'import sys; sys.path.insert(0, \"/app/src/lambda\"); from search_word_receiver import lambda_handler; event = {\"searchWord\": \"test search\"}; context = {}; result = lambda_handler(event, context); print(\"Lambda test result:\", result)'"
