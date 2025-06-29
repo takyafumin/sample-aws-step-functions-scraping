@@ -241,4 +241,23 @@ RUNTIME=python3.11
    - AWS認証情報はSecretsに設定
 
 - Lambdaやリソース定義は `template.yaml` で管理します
-- 旧手動デプロイ（deploy_lambda.sh等）は不要です
+
+## GitHub ActionsでSAMデプロイを実行するための設定
+
+GitHub ActionsからAWSへデプロイするには、AWS認証情報をリポジトリのSecretsに設定する必要があります。
+
+### 必要なSecrets
+- `AWS_ACCESS_KEY_ID` : デプロイ権限を持つIAMユーザーのアクセスキーID
+- `AWS_SECRET_ACCESS_KEY` : 上記ユーザーのシークレットアクセスキー
+
+### 設定手順
+1. AWSマネジメントコンソールでデプロイ用IAMユーザーを作成し、アクセスキーを発行
+2. GitHubリポジトリの「Settings」→「Secrets and variables」→「Actions」へ移動
+3. 「New repository secret」ボタンから、
+   - Name: `AWS_ACCESS_KEY_ID`、Value: 発行したアクセスキーID
+   - Name: `AWS_SECRET_ACCESS_KEY`、Value: 発行したシークレットアクセスキー
+   をそれぞれ登録
+
+### 注意事項
+- IAMユーザーには `sam deploy` で必要な権限（例: CloudFormation, Lambda, IAM, S3 など）を付与してください
+- Secretsは漏洩しないよう厳重に管理してください
