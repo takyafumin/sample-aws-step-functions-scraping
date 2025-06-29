@@ -51,6 +51,15 @@ Step Functions の入力から検索ワードを受け取り、次の処理に�
 
 詳細は [docs/step-functions-workflow.md](docs/step-functions-workflow.md) を参照してください。
 
+#### page_capture
+指定されたURLのページをキャプチャし、画像ファイルとして保存するLambda関数です。
+
+- **機能**: URLのページスクリーンショットを取得し、画像データとして返却
+- **入力**: `{"url": "https://example.com"}`
+- **出力**: 画像ファイルパスとbase64エンコードされた画像データを含む JSON レスポンス
+
+詳細は [docs/page_capture.md](docs/page_capture.md) を参照してください。
+
 ## ディレクトリ構成
 
 ```
@@ -69,13 +78,37 @@ Step Functions の入力から検索ワードを受け取り、次の処理に�
 │   ├── test_data_processor.py        # データ処理Lambda テスト
 │   ├── test_results_handler.py       # 結果ハンドリングLambda テスト
 │   └── test_workflow_integration.py  # ワークフロー統合テスト
-└── docs/
-    ├── search_word_receiver.md        # Lambda関数の詳細ドキュメント
-    └── step-functions-workflow.md     # Step Functions ワークフローの詳細
+├── tests/
+│   ├── test_search_word_receiver.py   # 検索ワード受信Lambda 単体テスト
+│   └── test_page_capture.py           # ページキャプチャLambda 単体テスト
+├── docs/
+│   ├── search_word_receiver.md        # Lambda関数の詳細ドキュメント
+│   └── step-functions-workflow.md     # Step Functions ワークフローの詳細
+│       └── page_capture.py            # ページキャプチャLambda
+├── manual_test.py                     # 手動テストスクリプト
+├── requirements.txt                   # Python依存関係
+├── runtime.txt                        # Pythonバージョン指定
+├── Dockerfile                         # Docker環境構築
+└── docker-compose.yml                # Docker Compose設定
 ```
 
-## テスト実行
+## 環境セットアップ
 
+このプロジェクトは環境に依存しないPython実行環境を提供します。
+
+### 方法1: ローカル環境での実行
+
+#### 1. Pythonバージョンの確認
+```bash
+python --version  # Python 3.12推奨
+```
+
+#### 2. 依存関係のインストール
+```bash
+pip install -r requirements.txt
+```
+
+#### 3. テスト実行
 ```bash
 # 全テスト実行
 python -m unittest discover tests -v
@@ -88,4 +121,28 @@ python -m unittest tests.test_results_handler -v
 
 # ワークフロー統合テスト
 python -m unittest tests.test_workflow_integration -v
+```
+
+### 方法2: Dockerを使用した実行
+
+#### 1. Dockerイメージのビルド
+```bash
+docker build -t step-functions-scraping .
+```
+
+#### 2. コンテナでテスト実行
+```bash
+docker run step-functions-scraping
+```
+
+### 方法3: Docker Composeを使用した実行
+
+#### 1. テスト実行
+```bash
+docker compose run app
+```
+
+#### 2. Lambda関数のテスト実行
+```bash
+docker compose run lambda-test
 ```
