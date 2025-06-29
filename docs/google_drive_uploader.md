@@ -1,38 +1,38 @@
-# Google Drive Uploader Lambda
+# Google Drive Uploader Lambda（日本語訳）
 
-This Lambda function uploads images to Google Drive and returns shareable URLs for the uploaded files.
+このLambda関数は画像をGoogle Driveにアップロードし、アップロードしたファイルの共有URLを返します。
 
-## Function Overview
+## 機能概要
 
-The `google_drive_uploader` Lambda function:
-- Receives base64-encoded image data from AWS Step Functions
-- Uploads the image to Google Drive using the Google Drive API
-- Sets the file permissions to be publicly readable
-- Returns a shareable URL for the uploaded file
-- Handles error cases gracefully with proper logging
+`google_drive_uploader` Lambda関数は以下を行います：
+- AWS Step Functionsからbase64エンコード画像データを受け取る
+- Google Drive APIを使って画像をGoogle Driveにアップロード
+- ファイルの権限を公開（誰でも閲覧可能）に設定
+- アップロードしたファイルの共有URLを返す
+- 適切なロギングとともにエラーケースも丁寧に処理
 
-## Input Format
+## 入力フォーマット
 
-The Lambda function expects an event with the following fields:
+このLambda関数は以下のフィールドを持つイベントを受け取ります：
 
 ```json
 {
-  "imageData": "base64_encoded_image_data",
-  "filename": "optional_filename.png",
-  "folderId": "optional_google_drive_folder_id"
+  "imageData": "base64エンコード画像データ",
+  "filename": "任意のファイル名.png",
+  "folderId": "任意のGoogle DriveフォルダID"
 }
 ```
 
-### Required Fields
-- `imageData`: Base64-encoded image data (required)
+### 必須フィールド
+- `imageData`: Base64エンコード画像データ（必須）
 
-### Optional Fields
-- `filename`: Name for the uploaded file (default: "screenshot.png")
-- `folderId`: Google Drive folder ID where the file should be uploaded (default: root folder)
+### 任意フィールド
+- `filename`: アップロードするファイル名（デフォルト: "screenshot.png"）
+- `folderId`: アップロード先Google DriveフォルダID（デフォルト: ルートフォルダ）
 
-## Output Format
+## 出力フォーマット
 
-### Success Response (HTTP 200)
+### 成功時レスポンス（HTTP 200）
 ```json
 {
   "statusCode": 200,
@@ -43,31 +43,29 @@ The Lambda function expects an event with the following fields:
 }
 ```
 
-### Error Response (HTTP 400 - Missing Image Data)
+### エラー時レスポンス例
+- 画像データがない場合（HTTP 400）
 ```json
 {
   "statusCode": 400,
   "body": "{\"error\": \"Image data not found in input\", \"shareable_url\": null}"
 }
 ```
-
-### Error Response (HTTP 400 - Invalid Base64 Data)
+- base64データが不正な場合（HTTP 400）
 ```json
 {
   "statusCode": 400,
   "body": "{\"error\": \"Invalid base64 image data: error details\", \"shareable_url\": null}"
 }
 ```
-
-### Error Response (HTTP 500 - Upload Failure)
+- アップロード失敗（HTTP 500）
 ```json
 {
   "statusCode": 500,
   "body": "{\"error\": \"Failed to upload to Google Drive: error details\", \"shareable_url\": null}"
 }
 ```
-
-### Error Response (HTTP 500 - Internal Error)
+- 内部エラー（HTTP 500）
 ```json
 {
   "statusCode": 500,
@@ -75,36 +73,35 @@ The Lambda function expects an event with the following fields:
 }
 ```
 
-## Setup Requirements
+## セットアップ要件
 
-### Google Drive API Setup
-1. Create a Google Cloud Project
-2. Enable the Google Drive API
-3. Create a Service Account
-4. Download the service account credentials JSON file
-5. Share your Google Drive folder with the service account email (if using a specific folder)
+### Google Drive APIのセットアップ
+1. Google Cloudプロジェクト作成
+2. Google Drive API有効化
+3. サービスアカウント作成
+4. サービスアカウントの認証情報JSONをダウンロード
+5. （特定フォルダを使う場合）そのフォルダをサービスアカウントのメールアドレスと共有
 
-### Environment Variables
-- `GOOGLE_SERVICE_ACCOUNT_KEY`: JSON string containing the service account credentials
+### 環境変数
+- `GOOGLE_SERVICE_ACCOUNT_KEY`: サービスアカウント認証情報のJSON文字列
 
-### Dependencies
-The following Python packages are required:
+### 依存パッケージ
 - `google-api-python-client`
 - `google-auth`
 
-## Usage Examples
+## 使用例
 
-### Basic Image Upload
+### 基本的な画像アップロード
 ```python
 event = {
     "imageData": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
     "filename": "screenshot.png"
 }
 response = lambda_handler(event, context)
-# Returns: {"statusCode": 200, "shareable_url": "https://drive.google.com/file/d/FILE_ID/view", ...}
+# 戻り値例: {"statusCode": 200, "shareable_url": "https://drive.google.com/file/d/FILE_ID/view", ...}
 ```
 
-### Upload to Specific Folder
+### 特定フォルダへのアップロード
 ```python
 event = {
     "imageData": "base64_image_data_here",
@@ -114,11 +111,10 @@ event = {
 response = lambda_handler(event, context)
 ```
 
-### Step Functions Integration
-The function can be used as a step in a Step Functions workflow:
+### Step Functions連携例
 ```json
 {
-  "Comment": "Scraping workflow with Google Drive upload",
+  "Comment": "Google Driveアップロード付きスクレイピングワークフロー",
   "StartAt": "CaptureScreenshot",
   "States": {
     "CaptureScreenshot": {
@@ -135,21 +131,21 @@ The function can be used as a step in a Step Functions workflow:
 }
 ```
 
-## Testing
+## テスト
 
-Run the unit tests:
+ユニットテスト実行：
 ```bash
 python -m unittest tests.test_google_drive_uploader -v
 ```
 
-## Security Considerations
+## セキュリティ考慮事項
 
-- Service account credentials should be stored securely as environment variables
-- Uploaded files are made publicly readable by default for sharing purposes
-- Consider implementing file size limits and content validation in production
-- Monitor Google Drive API usage quotas and rate limits
+- サービスアカウント認証情報は環境変数などで安全に管理してください
+- アップロードファイルはデフォルトで公開設定となるため注意
+- 本番運用時はファイルサイズ制限や内容バリデーションも検討してください
+- Google Drive APIの利用制限・レート制限に注意
 
-## Files
+## 関連ファイル
 
-- `src/lambda/google_drive_uploader.py` - Main Lambda function
-- `tests/test_google_drive_uploader.py` - Unit tests
+- `src/lambda/google_drive_uploader.py` - メインのLambda関数
+- `tests/test_google_drive_uploader.py` - ユニットテスト

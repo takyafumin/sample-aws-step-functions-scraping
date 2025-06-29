@@ -1,45 +1,45 @@
-# Search Word Receiver Lambda
+# Search Word Receiver Lambda（日本語訳）
 
-This Lambda function receives search words from AWS Step Functions input and returns them in JSON format.
+このLambda関数はAWS Step Functionsの入力から検索ワードを受け取り、JSON形式で返します。
 
-## Function Overview
+## 機能概要
 
-The `search_word_receiver` Lambda function:
-- Receives input from AWS Step Functions
-- Extracts the `searchWord` field from the event
-- Returns the search word in a standardized JSON format
-- Handles error cases gracefully
+`search_word_receiver` Lambda関数は以下を行います：
+- Step Functionsからの入力を受け取る
+- イベントから`searchWord`フィールドを抽出
+- 検索ワードを標準化JSON形式で返却
+- エラーも丁寧に処理
 
-## Input Format
+## 入力フォーマット
 
-The Lambda function expects an event with a `searchWord` field:
+`searchWord`フィールドを持つイベントを受け取ります：
 
 ```json
 {
-  "searchWord": "your search term here"
+  "searchWord": "検索ワード"
 }
 ```
 
-## Output Format
+## 出力フォーマット
 
-### Success Response (HTTP 200)
+### 成功時レスポンス（HTTP 200）
 ```json
 {
   "statusCode": 200,
-  "searchWord": "your search term here",
-  "body": "{\"searchWord\": \"your search term here\", \"message\": \"Search word received successfully\"}"
+  "searchWord": "検索ワード",
+  "body": "{\"searchWord\": \"検索ワード\", \"message\": \"Search word received successfully\"}"
 }
 ```
 
-### Error Response (HTTP 400 - Missing Search Word)
+### エラー時レスポンス例
+- 検索ワードがない場合（HTTP 400）
 ```json
 {
   "statusCode": 400,
   "body": "{\"error\": \"Search word not found in input\", \"searchWord\": null}"
 }
 ```
-
-### Error Response (HTTP 500 - Internal Error)
+- 内部エラー（HTTP 500）
 ```json
 {
   "statusCode": 500,
@@ -47,27 +47,27 @@ The Lambda function expects an event with a `searchWord` field:
 }
 ```
 
-## Usage Examples
+## 使用例
 
-### Basic Usage
+### 基本的な使い方
 ```python
-event = {"searchWord": "python programming"}
+event = {"searchWord": "python プログラミング"}
 response = lambda_handler(event, context)
-# Returns: {"statusCode": 200, "searchWord": "python programming", ...}
+# 戻り値: {"statusCode": 200, "searchWord": "python プログラミング", ...}
 ```
 
-### Japanese Search Words
+### 日本語検索ワード
 ```python
 event = {"searchWord": "プログラミング 学習"}
 response = lambda_handler(event, context)
-# Returns: {"statusCode": 200, "searchWord": "プログラミング 学習", ...}
+# 戻り値: {"statusCode": 200, "searchWord": "プログラミング 学習", ...}
 ```
 
-### Step Functions Integration
-The function can be used as the first step in a Step Functions workflow:
+### Step Functions連携例
+この関数はStep Functionsワークフローの最初のステップとして使用できます：
 ```json
 {
-  "Comment": "Scraping workflow",
+  "Comment": "スクレイピングワークフロー",
   "StartAt": "ReceiveSearchWord",
   "States": {
     "ReceiveSearchWord": {
@@ -79,20 +79,20 @@ The function can be used as the first step in a Step Functions workflow:
 }
 ```
 
-## Testing
+## テスト
 
-Run the unit tests:
+ユニットテスト実行：
 ```bash
 python -m unittest tests.test_search_word_receiver -v
 ```
 
-Run manual tests:
+手動テスト：
 ```bash
 python manual_test.py
 ```
 
-## Files
+## 関連ファイル
 
-- `src/lambda/search_word_receiver.py` - Main Lambda function
-- `tests/test_search_word_receiver.py` - Unit tests
-- `manual_test.py` - Manual testing script
+- `src/lambda/search_word_receiver.py` - メインのLambda関数
+- `tests/test_search_word_receiver.py` - ユニットテスト
+- `manual_test.py` - 手動テストスクリプト

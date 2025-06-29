@@ -1,19 +1,18 @@
-# Page Capture Lambda
+# Page Capture Lambda（日本語訳）
 
-This Lambda function captures screenshots of web pages and returns them as image files.
+このLambda関数はウェブページのスクリーンショットを取得し、画像ファイルとして返します。
 
-## Function Overview
+## 機能概要
 
-The `page_capture` Lambda function:
-- Receives input containing a URL to capture
-- Takes a screenshot of the specified web page
-- Saves the image to temporary storage (/tmp)
-- Returns the image data in base64 format along with the file path
-- Handles error cases gracefully
+`page_capture` Lambda関数は以下を行います：
+- 指定されたURLのページをキャプチャ
+- 画像を一時ストレージ（/tmp）に保存
+- 画像データをbase64形式とファイルパスで返却
+- エラーも丁寧に処理
 
-## Input Format
+## 入力フォーマット
 
-The Lambda function expects an event with a `url` field:
+`url`フィールドを持つイベントを受け取ります：
 
 ```json
 {
@@ -21,9 +20,9 @@ The Lambda function expects an event with a `url` field:
 }
 ```
 
-## Output Format
+## 出力フォーマット
 
-### Success Response (HTTP 200)
+### 成功時レスポンス（HTTP 200）
 ```json
 {
   "statusCode": 200,
@@ -34,23 +33,22 @@ The Lambda function expects an event with a `url` field:
 }
 ```
 
-### Error Response (HTTP 400 - Missing URL)
+### エラー時レスポンス例
+- URLがない場合（HTTP 400）
 ```json
 {
   "statusCode": 400,
   "body": "{\"error\": \"URL not found in input\", \"imageData\": null, \"imagePath\": null}"
 }
 ```
-
-### Error Response (HTTP 400 - Invalid URL Format)
+- URL形式が不正な場合（HTTP 400）
 ```json
 {
   "statusCode": 400,
   "body": "{\"error\": \"Invalid URL format: invalid-url\", \"imageData\": null, \"imagePath\": null}"
 }
 ```
-
-### Error Response (HTTP 500 - Internal Error)
+- 内部エラー（HTTP 500）
 ```json
 {
   "statusCode": 500,
@@ -58,27 +56,27 @@ The Lambda function expects an event with a `url` field:
 }
 ```
 
-## Usage Examples
+## 使用例
 
-### Basic Usage
+### 基本的な使い方
 ```python
 event = {"url": "https://example.com"}
 response = lambda_handler(event, context)
-# Returns: {"statusCode": 200, "url": "https://example.com", "imagePath": "/tmp/screenshot_xxx.png", ...}
+# 戻り値: {"statusCode": 200, "url": "https://example.com", "imagePath": "/tmp/screenshot_xxx.png", ...}
 ```
 
-### Japanese URLs
+### 日本語URL
 ```python
 event = {"url": "https://example.co.jp/パス"}
 response = lambda_handler(event, context)
-# Returns: {"statusCode": 200, "url": "https://example.co.jp/パス", ...}
+# 戻り値: {"statusCode": 200, "url": "https://example.co.jp/パス", ...}
 ```
 
-### Step Functions Integration
-The function can be used in a Step Functions workflow for web scraping:
+### Step Functions連携例
+この関数は、ウェブスクレイピングのStep Functionsワークフローで使用できます：
 ```json
 {
-  "Comment": "Scraping workflow with page capture",
+  "Comment": "ページキャプチャ付きスクレイピングワークフロー",
   "StartAt": "ReceiveSearchWord",
   "States": {
     "ReceiveSearchWord": {
@@ -95,27 +93,23 @@ The function can be used in a Step Functions workflow for web scraping:
 }
 ```
 
-## Implementation Details
+## 実装詳細
 
-### Current Implementation
-The current implementation creates placeholder images for testing purposes. In a production Lambda environment, this should be replaced with actual browser automation using:
+### 現状の実装
+テスト用のダミー画像生成になっています。本番運用時は以下のようなブラウザ自動化を利用してください：
+- Puppeteer（推奨）
+- Playwright
+- Lambda Layerでブラウザバイナリを同梱
 
-- **Puppeteer** with Chrome/Chromium (recommended for Lambda)
-- **Playwright** with browser binaries
-- Pre-built Lambda layers containing browser binaries
+### 本番運用時の要件
+- Lambda互換のChrome/Chromiumバイナリ
+- Puppeteer/Playwright/pyppeteer
+- Lambda Layer
+- メモリ512MB以上推奨
+- タイムアウト長め推奨
 
-### Production Setup Requirements
-For production deployment, you would need:
-
-1. **Browser Binary**: Chrome/Chromium binary compatible with Lambda runtime
-2. **Puppeteer/Playwright**: Node.js package or Python equivalent (pyppeteer)
-3. **Lambda Layer**: Pre-built layer with browser dependencies
-4. **Memory**: Increased Lambda memory allocation (512MB+ recommended)
-5. **Timeout**: Extended timeout for page loading and capture
-
-### Example Production Implementation
+### 実装例（pyppeteer）
 ```python
-# Using pyppeteer (Python port of Puppeteer)
 import asyncio
 from pyppeteer import launch
 
@@ -132,42 +126,38 @@ async def capture_real_screenshot(url):
             '--single-process'
         ]
     })
-    
     page = await browser.newPage()
     await page.setViewport({'width': 1280, 'height': 720})
     await page.goto(url, {'waitUntil': 'networkidle2'})
-    
-    screenshot_path = f'/tmp/screenshot_{context.aws_request_id}.png'
+    screenshot_path = f'/tmp/screenshot_{{context.aws_request_id}}.png'
     await page.screenshot({'path': screenshot_path, 'fullPage': True})
-    
     await browser.close()
     return screenshot_path
 ```
 
-## Testing
+## テスト
 
-Run the unit tests:
+ユニットテスト実行：
 ```bash
 python -m unittest tests.test_page_capture -v
 ```
 
-Run all tests:
+全テスト実行：
 ```bash
 python -m unittest discover tests -v
 ```
 
-## Error Handling
+## エラー処理
 
-The function handles various error scenarios:
-- Missing URL in input
-- Invalid URL format
-- Internal processing errors
-- File system errors
+- 入力URLなし
+- URL形式不正
+- 内部処理エラー
+- ファイルシステムエラー
 
-All errors are logged and return appropriate HTTP status codes with error messages.
+すべてのエラーはログに記録され、適切なHTTPステータスとメッセージで返却されます。
 
-## Files
+## 関連ファイル
 
-- `src/lambda/page_capture.py` - Main Lambda function
-- `tests/test_page_capture.py` - Unit tests
-- `docs/page_capture.md` - This documentation file
+- `src/lambda/page_capture.py` - メインのLambda関数
+- `tests/test_page_capture.py` - ユニットテスト
+- `docs/page_capture.md` - 本ドキュメント
