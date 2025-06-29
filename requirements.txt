@@ -1,3 +1,18 @@
+# Core dependencies for Google Drive integration
+google-api-python-client>=2.0.0
+google-auth>=2.0.0
+
+# Optional: For enhanced authentication and caching
+google-auth-oauthlib>=0.5.0
+google-auth-httplib2>=0.1.0
+
+# Standard libraries included with Python
+# - json (built-in)
+# - logging (built-in)
+# - base64 (built-in)
+# - io (built-in)
+# - os (built-in)
+# - typing (Python 3.5+)
 # Python dependencies for AWS Step Functions Scraping Lambda
 # Currently using only standard library modules
 

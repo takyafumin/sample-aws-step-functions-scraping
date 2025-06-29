@@ -18,6 +18,15 @@ Step Functions の入力から検索ワードを受け取り、次の処理に�
 
 詳細は [docs/search_word_receiver.md](docs/search_word_receiver.md) を参照してください。
 
+#### google_drive_uploader
+キャプチャ画像を Google Drive にアップロードし、共有URLを取得する Lambda 関数です。
+
+- **機能**: Base64エンコードされた画像データを Google Drive にアップロードし、共有URLを生成
+- **入力**: `{"imageData": "base64画像データ", "filename": "ファイル名", "folderId": "フォルダID"}`
+- **出力**: 共有URLとファイル情報を含む JSON レスポンス
+
+詳細は [docs/google_drive_uploader.md](docs/google_drive_uploader.md) を参照してください。
+
 #### web_scraper
 検索ワードに基づいてウェブスクレイピングを実行する Lambda 関数です。
 
@@ -66,6 +75,14 @@ Step Functions の入力から検索ワードを受け取り、次の処理に�
 ├── src/
 │   └── lambda/
 │       ├── __init__.py
+│       ├── search_word_receiver.py      # 検索ワード受信Lambda
+│       └── google_drive_uploader.py     # Google Drive画像アップロードLambda
+├── tests/
+│   ├── test_search_word_receiver.py     # 検索ワード受信の単体テスト
+│   └── test_google_drive_uploader.py    # Google Driveアップロードの単体テスト
+├── docs/
+│   ├── search_word_receiver.md          # 検索ワード受信Lambda詳細ドキュメント
+│   └── google_drive_uploader.md         # Google DriveアップロードLambda詳細ドキュメント
 │       ├── search_word_receiver.py    # 検索ワード受信Lambda
 │       ├── web_scraper.py             # ウェブスクレイピングLambda
 │       ├── data_processor.py          # データ処理Lambda
@@ -115,9 +132,13 @@ python -m unittest discover tests -v
 
 # 個別Lambda関数テスト
 python -m unittest tests.test_search_word_receiver -v
+python -m unittest tests.test_google_drive_uploader -v
 python -m unittest tests.test_web_scraper -v
 python -m unittest tests.test_data_processor -v
 python -m unittest tests.test_results_handler -v
+
+# 全テスト実行
+python -m unittest discover tests -v
 
 # ワークフロー統合テスト
 python -m unittest tests.test_workflow_integration -v
