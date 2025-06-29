@@ -1,0 +1,185 @@
+{
+  "Comment": "Scraping workflow that processes search words through multiple Lambda functions",
+  "StartAt": "ReceiveSearchWord",
+  "States": {
+    "ReceiveSearchWord": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:search-word-receiver",
+      "Comment": "Receive and validate search word input",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "Next": "HandleError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckSearchWordValid"
+    },
+    "CheckSearchWordValid": {
+      "Type": "Choice",
+      "Comment": "Check if search word was successfully received",
+      "Choices": [
+        {
+          "Variable": "$.statusCode",
+          "NumericEquals": 200,
+          "Next": "PerformWebScraping"
+        }
+      ],
+      "Default": "HandleError"
+    },
+    "PerformWebScraping": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:web-scraper",
+      "Comment": "Perform web scraping based on search word",
+      "TimeoutSeconds": 300,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        },
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 2,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+          "Next": "HandleError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckScrapingResults"
+    },
+    "CheckScrapingResults": {
+      "Type": "Choice",
+      "Comment": "Check if web scraping was successful",
+      "Choices": [
+        {
+          "And": [
+            {
+              "Variable": "$.statusCode",
+              "NumericEquals": 200
+            },
+            {
+              "Variable": "$.itemCount",
+              "NumericGreaterThan": 0
+            }
+          ],
+          "Next": "ProcessScrapedData"
+        }
+      ],
+      "Default": "HandleNoResults"
+    },
+    "ProcessScrapedData": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:data-processor",
+      "Comment": "Process and clean scraped data",
+      "TimeoutSeconds": 120,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+          "Next": "HandleError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckProcessingResults"
+    },
+    "CheckProcessingResults": {
+      "Type": "Choice",
+      "Comment": "Check if data processing was successful",
+      "Choices": [
+        {
+          "Variable": "$.statusCode",
+          "NumericEquals": 200,
+          "Next": "HandleFinalResults"
+        }
+      ],
+      "Default": "HandleError"
+    },
+    "HandleFinalResults": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:results-handler",
+      "Comment": "Handle final results and prepare output",
+      "TimeoutSeconds": 60,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+          "Next": "HandleError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "WorkflowSuccess"
+    },
+    "WorkflowSuccess": {
+      "Type": "Succeed",
+      "Comment": "Workflow completed successfully"
+    },
+    "HandleNoResults": {
+      "Type": "Pass",
+      "Comment": "Handle case where no results were found",
+      "Result": {
+        "statusCode": 200,
+        "message": "No results found for the given search word",
+        "finalResults": {
+          "searchWord": null,
+          "summary": {
+            "totalItemsFound": 0,
+            "totalItemsProcessed": 0
+          },
+          "results": [],
+          "metadata": {
+            "processingComplete": true,
+            "resultsCount": 0
+          }
+        }
+      },
+      "ResultPath": "$",
+      "Next": "WorkflowSuccess"
+    },
+    "HandleError": {
+      "Type": "Pass",
+      "Comment": "Handle workflow errors",
+      "Parameters": {
+        "statusCode": 500,
+        "error": "Workflow execution failed",
+        "details.$": "$.error",
+        "finalResults": null
+      },
+      "Next": "WorkflowFailed"
+    },
+    "WorkflowFailed": {
+      "Type": "Fail",
+      "Comment": "Workflow failed due to an error",
+      "Cause": "One or more steps in the scraping workflow failed"
+    }
+  }
+}
