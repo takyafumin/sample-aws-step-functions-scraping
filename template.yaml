@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Sample Step Functions Scraping Lambda stack (SAM)
+
+Globals:
+  Function:
+    Timeout: 60
+    Runtime: python3.11
+    MemorySize: 256
+
+Resources:
+  SearchWordReceiverFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: search_word_receiver
+      Handler: search_word_receiver.lambda_handler
+      CodeUri: src/lambda/
+      Policies: AWSLambdaBasicExecutionRole
+
+  GoogleSearchApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: google_search_api
+      Handler: google_search_api.lambda_handler
+      CodeUri: src/lambda/
+      Policies: AWSLambdaBasicExecutionRole
+
+  GoogleDriveUploaderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: google_drive_uploader
+      Handler: google_drive_uploader.lambda_handler
+      CodeUri: src/lambda/
+      Policies: AWSLambdaBasicExecutionRole
+
+  WebScraperFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: web_scraper
+      Handler: web_scraper.lambda_handler
+      CodeUri: src/lambda/
+      Policies: AWSLambdaBasicExecutionRole
+
+  DataProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: data_processor
+      Handler: data_processor.lambda_handler
+      CodeUri: src/lambda/
+      Policies: AWSLambdaBasicExecutionRole
+
+  ResultsHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: results_handler
+      Handler: results_handler.lambda_handler
+      CodeUri: src/lambda/
+      Policies: AWSLambdaBasicExecutionRole
+
+  SheetsUrlRecorderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: sheets_url_recorder
+      Handler: sheets_url_recorder.lambda_handler
+      CodeUri: src/lambda/
+      Policies: AWSLambdaBasicExecutionRole
+
+  PageCaptureFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: page_capture
+      Handler: page_capture.lambda_handler
+      CodeUri: src/lambda/
+      Policies: AWSLambdaBasicExecutionRole

@@ -229,3 +229,29 @@ Lambda関数はコマンドラインまたはGitHub Actionsからデプロイで
     - 新規作成: `.env` に設定済みなら `./deploy_lambda.sh <LAMBDA_FUNCTION_NAME>` だけでOK
     - もしくは `./deploy_lambda.sh <LAMBDA_FUNCTION_NAME> <ROLE_ARN> <HANDLER> <RUNTIME>`
 - GitHub Actions: Actionsタブから `Deploy Lambda` ワークフローを実行
+
+## SAMによるデプロイ
+
+このプロジェクトはAWS SAM(Serverless Application Model)でのデプロイに対応しています。
+
+### 1. SAM CLIのインストール
+
+公式ドキュメント: https://docs.aws.amazon.com/ja_jp/serverless-application-model/latest/developerguide/install-sam-cli.html
+
+### 2. ビルド
+```bash
+sam build
+```
+
+### 3. デプロイ
+```bash
+sam deploy --guided
+```
+初回は対話形式で設定できます。2回目以降は `sam deploy` だけでOKです。
+
+- Lambda関数やリソース定義は `template.yaml` で管理します。
+- デプロイ後、AWSマネジメントコンソールで関数やStep Functionsを確認できます。
+
+### 4. 既存の手動デプロイ手順について
+
+`deploy_lambda.sh` などの手動デプロイは不要です。今後はSAMで一括管理・デプロイしてください。
