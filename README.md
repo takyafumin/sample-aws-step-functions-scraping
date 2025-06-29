@@ -201,3 +201,31 @@ docker compose run app
 ```bash
 docker compose run lambda-test
 ```
+
+## .envファイルの作成
+
+Lambdaデプロイや一部のAPI連携には、AWSリソースや認証情報などの設定が必要です。
+
+1. プロジェクトルートに `.env` ファイルを作成し、必要な値を記載してください。
+2. サンプルは `.env.example` を参照してください。
+
+例:
+```
+ROLE_ARN=arn:aws:iam::123456789012:role/your-lambda-role
+HANDLER=main.lambda_handler
+RUNTIME=python3.11
+```
+
+- `.env` はGit管理対象外です。
+- Lambdaデプロイ時、引数で省略した値は `.env` の内容が自動で使われます。
+
+## Lambda関数のデプロイ
+
+Lambda関数はコマンドラインまたはGitHub Actionsからデプロイできます。
+
+- 詳細手順は `docs/lambda_deploy.md` を参照してください。
+- コマンドライン:
+    - 既存関数の更新: `./deploy_lambda.sh <LAMBDA_FUNCTION_NAME>`
+    - 新規作成: `.env` に設定済みなら `./deploy_lambda.sh <LAMBDA_FUNCTION_NAME>` だけでOK
+    - もしくは `./deploy_lambda.sh <LAMBDA_FUNCTION_NAME> <ROLE_ARN> <HANDLER> <RUNTIME>`
+- GitHub Actions: Actionsタブから `Deploy Lambda` ワークフローを実行
