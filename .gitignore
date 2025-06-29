@@ -112,3 +112,4 @@ dmypy.json
 tmp/
 temp/
 manual_test.py
+manual_test_page_capture.py
