@@ -32,8 +32,7 @@ Step Functions の入力から検索ワードを受け取り、次の処理に�
 ├── requirements.txt                   # Python依存関係
 ├── runtime.txt                        # Pythonバージョン指定
 ├── Dockerfile                         # Docker環境構築
-├── docker-compose.yml                # Docker Compose設定
-└── manual_test.py                     # 手動テストスクリプト
+└── docker-compose.yml                # Docker Compose設定
 ```
 
 ## 環境セットアップ
@@ -86,7 +85,4 @@ docker compose run lambda-test
 ```bash
 # 単体テスト実行
 python -m unittest tests.test_search_word_receiver -v
-
-# 手動テスト実行
-python manual_test.py
 ```

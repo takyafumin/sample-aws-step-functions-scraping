@@ -111,7 +111,6 @@ dmypy.json
 # Temporary files
 tmp/
 temp/
-manual_test.py
 test_environment.py
 
 # Docker
