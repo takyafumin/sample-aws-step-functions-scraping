@@ -18,6 +18,16 @@ Step Functions の入力から検索ワードを受け取り、次の処理に�
 
 詳細は [docs/search_word_receiver.md](docs/search_word_receiver.md) を参照してください。
 
+#### google_search_api
+Google Custom Search API を使用して検索結果の上位5件のURLを取得する Lambda 関数です。
+
+- **機能**: Google Custom Search API を呼び出し、指定された検索ワードで上位5件のURLを取得
+- **入力**: `{"searchWord": "検索ワード"}`
+- **出力**: 上位5件のURLを含む JSON レスポンス
+- **設定**: Google API Key と Search Engine ID が環境変数として必要
+
+詳細は [docs/google_search_api.md](docs/google_search_api.md) を参照してください。
+
 #### google_drive_uploader
 キャプチャ画像を Google Drive にアップロードし、共有URLを取得する Lambda 関数です。
 
@@ -84,6 +94,14 @@ Google Drive で取得したファイルの URL を Google Sheets に記録す�
 ├── src/
 │   └── lambda/
 │       ├── __init__.py
+│       ├── search_word_receiver.py    # 検索ワード受信Lambda
+│       └── google_search_api.py       # Google検索API連携Lambda
+├── tests/
+│   ├── test_search_word_receiver.py   # search_word_receiver単体テスト
+│   └── test_google_search_api.py      # google_search_api単体テスト
+├── docs/
+│   ├── search_word_receiver.md        # search_word_receiver詳細ドキュメント
+│   └── google_search_api.md           # google_search_api詳細ドキュメント
 │       ├── search_word_receiver.py      # 検索ワード受信Lambda
 │       └── sheets_url_recorder.py       # Google SheetsへのURL記録Lambda
 ├── tests/
